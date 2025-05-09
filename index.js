@@ -236,21 +236,21 @@ function isLateNightTime() {
 //   }
 // }
 
-// const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-// async function clearGlobalCommands() {
-//   const commands = await rest.get(Routes.applicationCommands(process.env.CLIENT_ID));
-//   for (const cmd of commands) {
-//     console.log(`🧹 삭제 중: ${cmd.name}`);
-//     await rest.delete(Routes.applicationCommand(process.env.CLIENT_ID, cmd.id));
-//   }
-//   console.log('✅ 글로벌 명령어 모두 삭제 완료!');
-// }
+async function clearGlobalCommands() {
+  const commands = await rest.get(Routes.applicationCommands(process.env.CLIENT_ID));
+  for (const cmd of commands) {
+    console.log(`🧹 삭제 중: ${cmd.name}`);
+    await rest.delete(Routes.applicationCommand(process.env.CLIENT_ID, cmd.id));
+  }
+  console.log('✅ 글로벌 명령어 모두 삭제 완료!');
+}
 
-// client.once('ready', async () => {
-//   console.log(`✅ Logged in as ${client.user.tag}`);
-//   await clearGlobalCommands();
-// });
+client.once('ready', async () => {
+  console.log(`✅ Logged in as ${client.user.tag}`);
+  await clearGlobalCommands();
+});
 
 // client.on(Events.InteractionCreate, async interaction => {
 //   if (interaction.isChatInputCommand()) {

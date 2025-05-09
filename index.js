@@ -249,7 +249,7 @@ async function registerSlashCommands() {
 
 client.once('ready', async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
-  await clearGlobalCommands();
+  await registerSlashCommands();
 });
 
 client.on(Events.InteractionCreate, async interaction => {

@@ -25,15 +25,36 @@ const path = require('path');
 const settingsPath = path.join(__dirname, 'user-settings.json');
 
 // 유저 설정 불러오기
-function loadUserSettings() {
-  if (!fs.existsSync(settingsPath)) return {};
-  const raw = fs.readFileSync(settingsPath);
-  return JSON.parse(raw);
+async function loadUserSettings(userId) {
+  const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings?user_id=eq.${userId}`, {
+    headers: {
+      apikey: process.env.SUPABASE_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_KEY}`
+    }
+  });
+
+  const data = await res.json();
+  return data.length > 0 ? data[0].setting : null;
 }
 
-// 유저 설정 저장하기
-function saveUserSettings(settings) {
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+async function saveUserSettings(userId, setting) {
+  const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/user_settings`, {
+    method: 'POST',
+    headers: {
+      apikey: process.env.SUPABASE_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      setting: setting
+    })
+  });
+
+  if (!res.ok) {
+    console.error('❌ Supabase 저장 실패:', await res.text());
+  }
 }
 
 client.once('ready', async () => {

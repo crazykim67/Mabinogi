@@ -214,27 +214,27 @@ function isLateNightTime() {
 
 //#region 커맨드
 
-async function registerSlashCommands() {
-  const commands = [
-    new SlashCommandBuilder()
-      .setName('help')
-      .setDescription('📘 알리미 봇 사용법을 안내합니다.')
-      .toJSON()
-  ];
+// async function registerSlashCommands() {
+//   const commands = [
+//     new SlashCommandBuilder()
+//       .setName('help')
+//       .setDescription('📘 알리미 봇 사용법을 안내합니다.')
+//       .toJSON()
+//   ];
 
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+//   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-  try {
-    console.log('🔄 슬래시 명령어 등록 중...');
-    await rest.put(
-      Routes.applicationCommands(process.env.CLIENT_ID),
-      { body: commands }
-    );
-    console.log('✅ 슬래시 명령어 등록 완료!');
-  } catch (error) {
-    console.error('❌ 슬래시 명령어 등록 실패:', error);
-  }
-}
+//   try {
+//     console.log('🔄 슬래시 명령어 등록 중...');
+//     await rest.put(
+//       Routes.applicationCommands(process.env.CLIENT_ID),
+//       { body: commands }
+//     );
+//     console.log('✅ 슬래시 명령어 등록 완료!');
+//   } catch (error) {
+//     console.error('❌ 슬래시 명령어 등록 실패:', error);
+//   }
+// }
 
 // const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
@@ -247,35 +247,35 @@ async function registerSlashCommands() {
 //   console.log('✅ 글로벌 명령어 모두 삭제 완료!');
 // }
 
-client.once('ready', async () => {
-  console.log(`✅ Logged in as ${client.user.tag}`);
-  await registerSlashCommands();
-});
+// client.once('ready', async () => {
+//   console.log(`✅ Logged in as ${client.user.tag}`);
+//   await clearGlobalCommands();
+// });
 
-client.on(Events.InteractionCreate, async interaction => {
-  if (interaction.isChatInputCommand()) {
-    if (interaction.commandName === 'help') {
-      const embed = new EmbedBuilder()
-        .setTitle('📘 야채가게 뿌대노기 알리미 사용법')
-        .setDescription(
-          `이 봇은 결계/필드보스 알림을 원하는 시간대에 자동으로 알려줍니다.\n\n` +
-          `**🔘 버튼 설명**\n` +
-          `- 🛡️ 결계: 오전 / 오후 / 전체 시간 설정 가능\n` +
-          `- 👹 필드보스: 정해진 시간에만 등장 (12시, 18시, 20시, 22시)\n\n` +
-          `**⚙️ 설정 방법**\n` +
-          `설정 채널에서 버튼을 클릭해 원하는 알림을 선택하면 됩니다.\n\n` +
-          `**🔕 모든 알림 끄기** 버튼을 누르면 더 이상 알림을 받지 않습니다.`
-        )
-        .setColor(0x00BFFF)
-        .setTimestamp();
+// client.on(Events.InteractionCreate, async interaction => {
+//   if (interaction.isChatInputCommand()) {
+//     if (interaction.commandName === 'help') {
+//       const embed = new EmbedBuilder()
+//         .setTitle('📘 야채가게 뿌대노기 알리미 사용법')
+//         .setDescription(
+//           `이 봇은 결계/필드보스 알림을 원하는 시간대에 자동으로 알려줍니다.\n\n` +
+//           `**🔘 버튼 설명**\n` +
+//           `- 🛡️ 결계: 오전 / 오후 / 전체 시간 설정 가능\n` +
+//           `- 👹 필드보스: 정해진 시간에만 등장 (12시, 18시, 20시, 22시)\n\n` +
+//           `**⚙️ 설정 방법**\n` +
+//           `설정 채널에서 버튼을 클릭해 원하는 알림을 선택하면 됩니다.\n\n` +
+//           `**🔕 모든 알림 끄기** 버튼을 누르면 더 이상 알림을 받지 않습니다.`
+//         )
+//         .setColor(0x00BFFF)
+//         .setTimestamp();
 
-      await interaction.reply({
-        embeds: [embed],
-        ephemeral: true 
-      });
-    }
-  }
-});
+//       await interaction.reply({
+//         embeds: [embed],
+//         ephemeral: true 
+//       });
+//     }
+//   }
+// });
 
 //#endregion
 

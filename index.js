@@ -271,7 +271,7 @@ client.once('ready', async () => {
 
 //       await interaction.reply({
 //         embeds: [embed],
-//         ephemeral: true
+//         ephemeral: true 
 //       });
 //     }
 //   }

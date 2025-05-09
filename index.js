@@ -168,6 +168,7 @@ async function sendAlarms(type, isPreNotice) {
         : (isPreNotice ? '👹 5분 후 필드보스 등장!' : '👹 필드보스 출현!')
     )
     .setColor(type === 'boundary' ? 0x00BFFF : 0x93D34A)
+    .setThumbnail(isPreNotice ? 'https://dszw1qtcnsa5e.cloudfront.net/community/20250423/2f7d3618-8140-4bc8-9621-f81dbd8b40a6/%EC%B6%9C%EC%A0%95%EC%9D%98%EB%B0%94%EB%9E%8C%EA%B2%8C%EC%8B%9C%EB%AC%BC1280x720.png' : 'https://dszw1qtcnsa5e.cloudfront.net/community/20250326/d8fe4dce-de91-4cde-9bc0-43ce3ae99ed6/%EA%B8%80%EB%9D%BC%EC%8A%A4%EA%B8%B0%EB%B8%8C%EB%84%A8%EA%B3%BC%EC%9D%98%EC%A1%B0%EC%9A%B0.png')
     .setTimestamp();
   await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
 }

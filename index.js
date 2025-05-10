@@ -15,6 +15,8 @@ const schedule = require('node-schedule');
 
 const boundaryTimes = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
 const fieldBossTimes = ['12:00', '18:00', '20:00', '22:00'];
+// const boundaryTimes = ['17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10'];
+// const fieldBossTimes = ['17:10', '17:16', '17:20', '17:26'];
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -189,6 +191,17 @@ function isLateNightTime() {
 //#region 슬래시 명령어 등록
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
+async function registerGuildCommands() {
+  const commands = [
+    new SlashCommandBuilder().setName('help').setDescription('📘 뿌대노기 봇 사용법을 안내합니다.').toJSON()
+  ];
+  await rest.put(
+    Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+    { body: commands }
+  );
+  console.log('✅ 서버 전용 슬래시 명령어 등록 완료');
+}
+
 async function clearGlobalCommands() {
   const commands = await rest.get(Routes.applicationCommands(process.env.CLIENT_ID));
   for (const cmd of commands) {
@@ -205,17 +218,6 @@ async function clearGuildCommands(guildId) {
     await rest.delete(Routes.applicationGuildCommand(process.env.CLIENT_ID, guildId, cmd.id));
   }
   console.log(`✅ 서버(${guildId}) 명령어 정리 완료`);
-}
-
-async function registerGuildCommands() {
-  const commands = [
-    new SlashCommandBuilder().setName('help').setDescription('📘 알리미 봇 사용법을 안내합니다.').toJSON()
-  ];
-  await rest.put(
-    Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-    { body: commands }
-  );
-  console.log('✅ 서버 전용 슬래시 명령어 등록 완료');
 }
 
 (async () => {

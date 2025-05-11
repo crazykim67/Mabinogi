@@ -154,10 +154,24 @@ client.on(Events.InteractionCreate, async interaction => {
 
 function registerAlarm(timeStr, type) {
   const [hour, minute] = timeStr.split(':').map(Number);
-  schedule.scheduleJob(`${minute} ${hour} * * *`, () => sendAlarms(type, false));
+
+  const jobTime = `${minute} ${hour} * * *`;
+  console.log(`[예약 등록] ${type.toUpperCase()} 정시 → ${jobTime}`);
+
+  schedule.scheduleJob(jobTime, () => {
+    console.log(`[알림 실행] ${type.toUpperCase()} 정시 알림 → ${new Date().toLocaleString('ko-KR')}`);
+    sendAlarms(type, false);
+  });
+
   const preMinute = (minute - 5 + 60) % 60;
   const preHour = (minute - 5 < 0) ? (hour - 1 + 24) % 24 : hour;
-  schedule.scheduleJob(`${preMinute} ${preHour} * * *`, () => sendAlarms(type, true));
+  const preJobTime = `${preMinute} ${preHour} * * *`;
+  console.log(`[예약 등록] ${type.toUpperCase()} 5분 전 → ${preJobTime}`);
+
+  schedule.scheduleJob(preJobTime, () => {
+    console.log(`[알림 실행] ${type.toUpperCase()} 5분 전 알림 → ${new Date().toLocaleString('ko-KR')}`);
+    sendAlarms(type, true);
+  });
 }
 
 async function sendAlarms(type, isPreNotice) {

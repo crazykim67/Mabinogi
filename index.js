@@ -15,8 +15,8 @@ const schedule = require('node-schedule');
 
 const boundaryTimes = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
 const fieldBossTimes = ['12:00', '18:00', '20:00', '22:00'];
-// const boundaryTimes = ['17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10'];
-// const fieldBossTimes = ['17:10', '17:16', '17:20', '17:26'];
+// const boundaryTimes = ['03:14', '03:19', '03:21', '03:23', '17:50', '18:00', '18:10'];
+// const fieldBossTimes = ['03:14', '03:20', '03:22', '03:24'];
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -56,6 +56,23 @@ client.once('ready', async () => {
 
   const channel = await client.channels.fetch(process.env.SETTING_CHANNEL_ID);
   if (!channel) return;
+
+  // 기존 메시지 삭제 (자신이 보낸 메시지 중 임베드 제목이 일치하는 것만)
+  const messages = await channel.messages.fetch({ limit: 50 });
+  const botMessages = messages.filter(m =>
+    m.author.id === client.user.id &&
+    m.embeds.length > 0 &&
+    m.embeds[0].title === '📢 야채가게 뿌대노기 알리미 설정'
+  );
+
+  for (const msg of botMessages.values()) {
+    try {
+      await msg.delete();
+      console.log(`🗑️ 이전 설정 메시지 삭제됨 (ID: ${msg.id})`);
+    } catch (err) {
+      console.warn(`⚠️ 메시지 삭제 실패: ${err.message}`);
+    }
+  }
 
   const embed = new EmbedBuilder()
     .setTitle('📢 야채가게 뿌대노기 알리미 설정')
@@ -149,15 +166,18 @@ async function sendAlarms(type, isPreNotice) {
   if (!channel) return;
   const mentionIds = [];
   for (const [userId, setting] of Object.entries(settings)) {
-    const shouldNotify =
-      setting === 'alert_all_on' ||
-      (type === 'boundary' && (
-        setting === 'alert_all' ||
-        (setting === 'alert_morning' && isMorningTime()) ||
-        (setting === 'alert_afternoon' && isAfternoonTime()) ||
-        (setting === 'alert_no_late' && !isLateNightTime())
-      )) ||
-      (type === 'field' && (setting === 'only_fieldboss' || setting === 'alert_all_on'));
+    const shouldNotify = (
+  setting === 'alert_all_on' || 
+  (type === 'boundary' && (
+    setting === 'alert_all' ||
+    (setting === 'alert_morning' && isMorningTime()) ||
+    (setting === 'alert_afternoon' && isAfternoonTime()) ||
+    (setting === 'alert_no_late' && !isLateNightTime())
+  )) ||
+  (type === 'field' && (
+    setting === 'only_fieldboss'
+  ))
+);
 
     if (shouldNotify) mentionIds.push(`<@${userId}>`);
   }
@@ -175,9 +195,9 @@ async function sendAlarms(type, isPreNotice) {
   // await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
   const msg = await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
 
-  setTimeout(() => {
-    msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
-  }, 10 * 60 * 100); // 1분 뒤
+  // setTimeout(() => {
+  //   msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
+  // }, 600000); // 10분 뒤
 }
 
 function isMorningTime() {

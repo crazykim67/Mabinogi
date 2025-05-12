@@ -198,8 +198,6 @@ async function sendAlarms(type, isPreNotice) {
   ))
 );
 
-);
-
     if (shouldNotify) mentionIds.push(`<@${userId}>`);
   }
   if (mentionIds.length === 0) return;

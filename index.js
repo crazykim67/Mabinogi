@@ -43,8 +43,11 @@ async function loadAllUserSettings() {
   });
   const data = await res.json();
   const result = {};
-  for (const row of data) result[row.user_id] = row.setting;
-  return result;
+  for (const row of data){
+    result[row.user_id] = row.setting;
+    console.log(`${row.user_id} : ${row.setting}`);
+  }
+    return result;
 }
 
 client.once('ready', async () => {

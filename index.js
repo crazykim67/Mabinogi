@@ -167,7 +167,7 @@ function registerAlarm(timeStr, type) {
   const preHour = (minute - 5 < 0) ? (hour - 1 + 24) % 24 : hour;
   const preJobTime = `${preMinute} ${preHour} * * *`;
   console.log(`[예약 등록] ${type.toUpperCase()} 5분 전 → ${preJobTime}`);
-
+  console.log(`[등록] ${type.toUpperCase()} ${timeStr} 알림 등록됨 at ${new Date().toLocaleString('ko-KR')}`);
   schedule.scheduleJob(preJobTime, () => {
     console.log(`[알림 실행] ${type.toUpperCase()} 5분 전 알림 → ${new Date().toLocaleString('ko-KR')}`);
     sendAlarms(type, true);
@@ -176,6 +176,7 @@ function registerAlarm(timeStr, type) {
 
 async function sendAlarms(type, isPreNotice) {
   const settings = await loadAllUserSettings();
+  console.log(`[실행] ${type.toUpperCase()} 알림 실행됨 at ${new Date().toLocaleString('ko-KR')}, 대상: ${mentionIds.length}`);
   const channel = await client.channels.fetch(process.env.ALERT_CHANNEL_ID);
   if (!channel) return;
   const mentionIds = [];
@@ -191,6 +192,7 @@ async function sendAlarms(type, isPreNotice) {
   (type === 'field' && (
     setting === 'only_fieldboss'
   ))
+
 );
 
     if (shouldNotify) mentionIds.push(`<@${userId}>`);

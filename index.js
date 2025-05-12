@@ -15,8 +15,8 @@ const schedule = require('node-schedule');
 
 const boundaryTimes = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
 const fieldBossTimes = ['12:00', '18:00', '20:00', '22:00'];
-// const boundaryTimes = ['03:14', '03:19', '03:21', '03:23', '17:50', '18:00', '18:10'];
-// const fieldBossTimes = ['03:14', '03:20', '03:22', '03:24'];
+// const boundaryTimes = ['17:10', '17:20', '17:30', '17:40', '17:50', '18:00', '18:10'];
+// const fieldBossTimes = ['17:10', '17:16', '17:20', '17:26'];
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -43,11 +43,8 @@ async function loadAllUserSettings() {
   });
   const data = await res.json();
   const result = {};
-  for (const row of data){
-    result[row.user_id] = row.setting;
-    console.log(`${row.user_id} : ${row.setting}`);
-  }
-    return result;
+  for (const row of data) result[row.user_id] = row.setting;
+  return result;
 }
 
 client.once('ready', async () => {
@@ -60,7 +57,7 @@ client.once('ready', async () => {
   const channel = await client.channels.fetch(process.env.SETTING_CHANNEL_ID);
   if (!channel) return;
 
-  // 기존 메시지 삭제 (자신이 보낸 메시지 중 임베드 제목이 일치하는 것만)
+// 기존 메시지 삭제 (자신이 보낸 메시지 중 임베드 제목이 일치하는 것만)
   const messages = await channel.messages.fetch({ limit: 50 });
   const botMessages = messages.filter(m =>
     m.author.id === client.user.id &&
@@ -157,45 +154,31 @@ client.on(Events.InteractionCreate, async interaction => {
 
 function registerAlarm(timeStr, type) {
   const [hour, minute] = timeStr.split(':').map(Number);
-
-  const jobTime = `${minute} ${hour} * * *`;
-  console.log(`[예약 등록] ${type.toUpperCase()} 정시 → ${jobTime}`);
-
-  schedule.scheduleJob(jobTime, () => {
-    console.log(`[알림 실행] ${type.toUpperCase()} 정시 알림 → ${new Date().toLocaleString('ko-KR')}`);
-    sendAlarms(type, false);
-  });
-
+  schedule.scheduleJob(`${minute} ${hour} * * *`, () => sendAlarms(type, false));
   const preMinute = (minute - 5 + 60) % 60;
   const preHour = (minute - 5 < 0) ? (hour - 1 + 24) % 24 : hour;
-  const preJobTime = `${preMinute} ${preHour} * * *`;
-  console.log(`[예약 등록] ${type.toUpperCase()} 5분 전 → ${preJobTime}`);
-
-  schedule.scheduleJob(preJobTime, () => {
-    console.log(`[알림 실행] ${type.toUpperCase()} 5분 전 알림 → ${new Date().toLocaleString('ko-KR')}`);
-    sendAlarms(type, true);
-  });
+  schedule.scheduleJob(`${preMinute} ${preHour} * * *`, () => sendAlarms(type, true));
 }
+
 async function sendAlarms(type, isPreNotice) {
   const settings = await loadAllUserSettings();
-  console.log(`[실행] ${type.toUpperCase()} 알림 실행됨 at ${new Date().toLocaleString('ko-KR')}, 대상: ${mentionIds.length}`);
   const channel = await client.channels.fetch(process.env.ALERT_CHANNEL_ID);
   if (!channel) return;
   const mentionIds = [];
   for (const [userId, setting] of Object.entries(settings)) {
-    const shouldNotify = (
-  setting === 'alert_all_on' ||
-  (type === 'boundary' && (
-    setting === 'alert_all' ||
-    (setting === 'alert_morning' && isMorningTime()) ||
-    (setting === 'alert_afternoon' && isAfternoonTime()) ||
-    (setting === 'alert_no_late' && !isLateNightTime())
-  )) ||
-  (type === 'field' && (
-    setting === 'only_fieldboss' || 
-    setting === 'alert_all_on' // ❗ 이 줄이 반드시 필요함!
-  ))
-);
+    const shouldNotify =
+      setting === 'alert_all_on' ||
+      (type === 'boundary' && (
+  setting === 'alert_all' ||
+  setting === 'alert_morning' && isMorningTime() ||
+  setting === 'alert_afternoon' && isAfternoonTime() ||
+  setting === 'alert_no_late' && !isLateNightTime() ||
+  setting === 'alert_all_on'
+)) ||
+(type === 'field' && (
+  setting === 'only_fieldboss' || 
+  setting === 'alert_all_on'
+))
 
     if (shouldNotify) mentionIds.push(`<@${userId}>`);
   }
@@ -211,11 +194,12 @@ async function sendAlarms(type, isPreNotice) {
     .setThumbnail(isPreNotice ? 'https://dszw1qtcnsa5e.cloudfront.net/community/20250423/2f7d3618-8140-4bc8-9621-f81dbd8b40a6/%EC%B6%9C%EC%A0%95%EC%9D%98%EB%B0%94%EB%9E%8C%EA%B2%8C%EC%8B%9C%EB%AC%BC1280x720.png' : 'https://dszw1qtcnsa5e.cloudfront.net/community/20250326/d8fe4dce-de91-4cde-9bc0-43ce3ae99ed6/%EA%B8%80%EB%9D%BC%EC%8A%A4%EA%B8%B0%EB%B8%8C%EB%84%A8%EA%B3%BC%EC%9D%98%EC%A1%B0%EC%9A%B0.png')
     .setTimestamp();
   // await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
+
   const msg = await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
 
-  // setTimeout(() => {
-  //   msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
-  // }, 600000); // 10분 뒤
+  setTimeout(() => {
+    msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
+  }, 600000); // 10분 뒤
 }
 
 function isMorningTime() {

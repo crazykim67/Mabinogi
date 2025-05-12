@@ -211,9 +211,9 @@ async function sendAlarms(type, isPreNotice) {
 
   const msg = await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
 
-  setTimeout(() => {
-    msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
-  }, 600000); // 10분 뒤
+  // setTimeout(() => {
+  //   msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
+  // }, 600000); // 10분 뒤
 }
 
 function isMorningTime() {

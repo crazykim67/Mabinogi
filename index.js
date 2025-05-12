@@ -154,10 +154,25 @@ client.on(Events.InteractionCreate, async interaction => {
 
 function registerAlarm(timeStr, type) {
   const [hour, minute] = timeStr.split(':').map(Number);
-  schedule.scheduleJob(`${minute} ${hour} * * *`, () => sendAlarms(type, false));
+
+  // 고유 키 지정
+  const id = `${type}-${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  const jobTime = `${minute} ${hour} * * *`;
+
+  schedule.scheduleJob(id, jobTime, () => {
+    console.log(`[실행] ${id} 정시`);
+    sendAlarms(type, false);
+  });
+
   const preMinute = (minute - 5 + 60) % 60;
   const preHour = (minute - 5 < 0) ? (hour - 1 + 24) % 24 : hour;
-  schedule.scheduleJob(`${preMinute} ${preHour} * * *`, () => sendAlarms(type, true));
+  const preId = `${type}-pre-${preHour.toString().padStart(2, '0')}:${preMinute.toString().padStart(2, '0')}`;
+  const preJobTime = `${preMinute} ${preHour} * * *`;
+
+  schedule.scheduleJob(preId, preJobTime, () => {
+    console.log(`[실행] ${preId} 5분 전`);
+    sendAlarms(type, true);
+  });
 }
 
 async function sendAlarms(type, isPreNotice) {
@@ -166,19 +181,18 @@ async function sendAlarms(type, isPreNotice) {
   if (!channel) return;
   const mentionIds = [];
   for (const [userId, setting] of Object.entries(settings)) {
-    const shouldNotify =
-      setting === 'alert_all_on' ||
-      (type === 'boundary' && (
-  setting === 'alert_all' ||
-  setting === 'alert_morning' && isMorningTime() ||
-  setting === 'alert_afternoon' && isAfternoonTime() ||
-  setting === 'alert_no_late' && !isLateNightTime() ||
-  setting === 'alert_all_on'
-)) ||
-(type === 'field' && (
-  setting === 'only_fieldboss' || 
-  setting === 'alert_all_on'
-))
+    const shouldNotify = (
+  setting === 'alert_all_on' ||
+  (type === 'boundary' && (
+    setting === 'alert_all' ||
+    (setting === 'alert_morning' && isMorningTime()) ||
+    (setting === 'alert_afternoon' && isAfternoonTime()) ||
+    (setting === 'alert_no_late' && !isLateNightTime())
+  )) ||
+  (type === 'field' && (
+    setting === 'only_fieldboss'
+  ))
+);
 
     if (shouldNotify) mentionIds.push(`<@${userId}>`);
   }

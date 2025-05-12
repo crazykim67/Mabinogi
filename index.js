@@ -185,7 +185,7 @@ async function sendAlarms(type, isPreNotice) {
   const mentionIds = [];
   for (const [userId, setting] of Object.entries(settings)) {
     const shouldNotify = (
-  setting === 'alert_all_on' || 
+  setting === 'alert_all_on' ||
   (type === 'boundary' && (
     setting === 'alert_all' ||
     (setting === 'alert_morning' && isMorningTime()) ||
@@ -193,8 +193,10 @@ async function sendAlarms(type, isPreNotice) {
     (setting === 'alert_no_late' && !isLateNightTime())
   )) ||
   (type === 'field' && (
-    setting === 'only_fieldboss'
+    setting === 'only_fieldboss' || 
+    setting === 'alert_all_on' // ❗ 이 줄이 반드시 필요함!
   ))
+);
 
 );
 

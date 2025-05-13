@@ -12,6 +12,7 @@ const {
   SlashCommandBuilder
 } = require('discord.js');
 const schedule = require('node-schedule');
+const timeZone = 'Asia/Seoul';
 
 const boundaryTimes = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
 const fieldBossTimes = ['12:00', '18:00', '20:00', '22:00'];
@@ -155,22 +156,29 @@ client.on(Events.InteractionCreate, async interaction => {
 function registerAlarm(timeStr, type) {
   const [hour, minute] = timeStr.split(':').map(Number);
 
-  // 고유 키 지정
+  // 정시 알림 예약 (KST 기준)
+  const jobTime = {
+    hour,
+    minute,
+    tz: timeZone
+  };
   const id = `${type}-${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-  const jobTime = `${minute} ${hour} * * *`;
-
   schedule.scheduleJob(id, jobTime, () => {
-    console.log(`[실행] ${id} 정시`);
+    console.log(`[실행] ${id} 정시 (${new Date().toLocaleString('ko-KR')})`);
     sendAlarms(type, false);
   });
 
+  // 5분 전 알림 예약 (KST 기준)
   const preMinute = (minute - 5 + 60) % 60;
   const preHour = (minute - 5 < 0) ? (hour - 1 + 24) % 24 : hour;
+  const preJobTime = {
+    hour: preHour,
+    minute: preMinute,
+    tz: timeZone
+  };
   const preId = `${type}-pre-${preHour.toString().padStart(2, '0')}:${preMinute.toString().padStart(2, '0')}`;
-  const preJobTime = `${preMinute} ${preHour} * * *`;
-
   schedule.scheduleJob(preId, preJobTime, () => {
-    console.log(`[실행] ${preId} 5분 전`);
+    console.log(`[실행] ${preId} 5분 전 (${new Date().toLocaleString('ko-KR')})`);
     sendAlarms(type, true);
   });
 }
@@ -210,7 +218,7 @@ async function sendAlarms(type, isPreNotice) {
   // await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
 
   const msg = await channel.send({ content: mentionIds.join(' '), embeds: [embed] });
-
+  console.log(`[sendAlarms] ${type}, ${isPreNotice ? '5분 전' : '정시'} (${new Date().toLocaleString('ko-KR')})`);
   // setTimeout(() => {
   //   msg.delete().catch(err => console.warn('❌ 메시지 삭제 실패:', err.message));
   // }, 600000); // 10분 뒤
